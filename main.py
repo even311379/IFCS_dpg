@@ -2,27 +2,29 @@ import dearpygui.dearpygui as dpg
 import os
 import yaml
 import layout
+import globals
 
-FrameCount = 0
-EditorInit = {}
+
 
 
 def init_editor():
-    global EditorInit
     # font setup...
     # register static images...
     if not os.path.isdir('Config'):
         os.mkdir('Config')
     if os.path.isfile('Config/Editor.ini'):
         with open('Config/Editor.ini', 'r') as f:
-            EditorInit = yaml.load(f.read(), yaml.FullLoader)
+            globals.EditorInit = yaml.load(f.read(), yaml.FullLoader)
     else:
-        EditorInit['theme'] = 'grey'
-        EditorInit['app_size'] = 'FHD'
-        EditorInit['global_font_scale'] = 1.0
-        EditorInit['project_path'] = ''
+        globals.EditorInit['theme'] = 'grey'
+        globals.EditorInit['app_size'] = 'FHD'
+        globals.EditorInit['global_font_scale'] = 1.0
+        globals.EditorInit['project_path'] = ''
         with open('Config/Editor.ini', 'w') as f:
-            yaml.dump(EditorInit, f, default_flow_style=False)
+            yaml.dump(globals.EditorInit, f, default_flow_style=False)
+    dpg.configure_app(docking=True, docking_space=True)
+    if 'active_workspace' in globals.EditorInit:
+        dpg.configure_app(init_file=f"Config/{globals.EditorInit['active_workspace']}.ini")
 
 
 def post_init_editor():
@@ -32,31 +34,38 @@ def post_init_editor():
 
 def global_tick():
     pass
+    # print('tick not working??')
     # global TickImpl
     # exec(dpg.get_value("tick_impl"))
 
 
+def pend_to_stop(n):
+    globals.TimeToKill = globals.FrameCount + n
+    print(globals.TimeToKill, globals.FrameCount)
+
+
 def loop():
-    global FrameCount
-    if FrameCount == 0:
-        init_editor()
-    # if FrameCount == 1:
+    frame_count = globals.FrameCount
+    # if frame_count == 0:
+    #     init_editor()
+    # if frame_count == 1:
     #     post_init_editor()
-    if FrameCount > 1 and FrameCount % 10 == 0:
+    if frame_count > 1 and frame_count % 10 == 0:
         global_tick()
-    FrameCount += 1
+    if frame_count == globals.TimeToKill:
+        dpg.stop_dearpygui()
+    globals.FrameCount = frame_count + 1
 
 
 if __name__ == '__main__':
     dpg.create_context()
-    dpg.create_viewport(title='IFCS', width=1920, height=1080, resizable=False, x_pos=1920, y_pos=0)
-    dpg.configure_app(docking=True, docking_space=True)
-    dpg.configure_app(load_init_file="Config/test.ini")
+    init_editor()
+    dpg.create_viewport(title='IFCS', width=1920, height=1080, resizable=False)
+
     # layout.create_menu()
+    post_init_editor()
     dpg.setup_dearpygui()
     dpg.show_viewport()
-    init_editor()
-    post_init_editor()
     # dpg.start_dearpygui()
     if not dpg.is_viewport_ok():
         raise RuntimeError("Viewport not ready")
@@ -64,3 +73,4 @@ if __name__ == '__main__':
         loop()
         dpg.render_dearpygui_frame()
     dpg.destroy_context()
+    globals.save_editor_init()
