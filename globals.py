@@ -1,9 +1,8 @@
 import yaml
 
 FrameCount = 0
-EditorInit = {}
+EditorInit = dict(theme='light')
 TimeToKill = -1
-
 
 def save_editor_init():
     init = EditorInit

@@ -8,7 +8,7 @@ def test_window1():
         dpg.add_text("test1")
         dpg.add_text("test1")
         dpg.add_text("test1")
-    dpg.show_item_debug("test1")
+    # dpg.show_item_debug("test1")
 
 
 def test_window2():

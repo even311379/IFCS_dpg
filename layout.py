@@ -39,7 +39,7 @@ def create_menu():
 
 
 def create_test_windows():
-    dpg.show_debug()
+    # dpg.show_debug()
     utils.util_window()
     window_test.test_window1()
     window_test.test_window2()
